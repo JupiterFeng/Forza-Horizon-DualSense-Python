@@ -61,8 +61,14 @@ def _loop(ds, listener, s):
         if now - last_log >= 1.0:
             last_log = now
             tag = "RACE" if t["on"] else "MENU"
-            log.debug("[%s] %6.1f km/h | gear %d | gas %3d R=%s | brake %3d L=%s",
-                      tag, t["speed"], t.get("gear", 0), t["accel"], right, t["brake"], left)
+            slip_r = _max_abs(t, "tire_slip_ratio")
+            slip_c = _max_abs(t, "tire_combined_slip")
+            log.debug("[%s] %6.1f km/h | gear %d | gas %3d R=%s | brake %3d L=%s | slip %.2f combined %.2f",
+                      tag, t["speed"], t.get("gear", 0), t["accel"], right, t["brake"], left, slip_r, slip_c)
+
+
+def _max_abs(t, prefix):
+    return max(abs(t.get(f"{prefix}_{wheel}", 0.0)) for wheel in ("fl", "fr", "rl", "rr"))
 
 
 if __name__ == "__main__":
@@ -79,9 +85,10 @@ if __name__ == "__main__":
     logging.basicConfig(
         level=logging.DEBUG if args.debug else logging.INFO,
         format="%(asctime)s %(message)s",
+        force=True,
     )
+    log.debug("Debug logging enabled")
     try:
         run(settings)
     except KeyboardInterrupt:
         sys.exit(0)
-

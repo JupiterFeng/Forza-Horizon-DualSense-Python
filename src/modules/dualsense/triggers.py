@@ -1,15 +1,16 @@
 """DualSense adaptive trigger effects — KISS edition.
 
-Design rule: trigger forces are capped well below 255 so the trigger always
-keeps ~10% physical travel free. That's the headroom vibration animations
-need to actually be felt under your finger.
+Design rule: normal trigger forces are capped well below 255 so the trigger
+usually keeps physical travel free for vibration animations. Pedal input above
+98% jumps straight to max trigger force inside the normal pedal ramp.
 
 Right trigger (throttle), strict priority — only one effect at a time:
-    1. Gear shift  -> 10 Hz vibration burst (~80 ms)
+    1. Gear shift  -> short vibration burst
     2. Rev limiter -> 30 Hz vibration
     3. Throttle    -> exponential rigid resistance (baseline -> max)
 
-Left trigger (brake): exponential rigid resistance, baseline -> max.
+Left trigger (brake): telemetry tire-slip pulse under ABS-like braking,
+otherwise exponential rigid resistance, baseline -> max.
 Handbrake adds a flat bonus.
 """
 
@@ -19,9 +20,10 @@ import time
 M_OFF   = 0x05
 M_RIGID = 0x01
 M_PULSE = 0x06
+RAW_MAX = 255
 
 
-def _clamp(v, hi=255):
+def _clamp(v, hi=RAW_MAX):
     return max(0, min(hi, round(v)))
 
 
@@ -52,12 +54,22 @@ class TriggerAnimation:
 
     def _brake(self, t, s):
         brake = t.get("brake", 0)
+
         # Always hold baseline so the trigger never toggles off<->rigid (no
         # "machine gun" jitter near the deadzone).
         if brake < s.brake_deadzone:
             return rigid(s.brake_baseline_force)
-        ratio = (brake - s.brake_deadzone) / max(255 - s.brake_deadzone, 1)
-        force = s.brake_baseline_force + (s.brake_max_force - s.brake_baseline_force) * (ratio ** s.brake_curve)
+        if self._abs_active(t, s, brake):
+            return vibration(s.abs_freq, s.abs_amp)
+        force = self._pedal_force(
+            brake,
+            s.brake_deadzone,
+            s.brake_baseline_force,
+            s.brake_max_force,
+            s.brake_curve,
+            s.pedal_full_force_at,
+            s.pedal_value_max,
+        )
         if t.get("handbrake", 0):
             force += s.handbrake_bonus
         return rigid(force)
@@ -78,7 +90,8 @@ class TriggerAnimation:
             self._shift_until = now + s.gear_shift_duration_ms / 1000.0
         self._prev_gear = gear
 
-        # 1. Gear shift burst wins everything (you feel it through the trigger)
+        # 1. Gear shift burst must win full-throttle too; FH5 shifts usually
+        # happen while accel is pinned.
         if now < self._shift_until:
             return vibration(s.gear_shift_freq, s.gear_shift_amp)
 
@@ -92,16 +105,41 @@ class TriggerAnimation:
             return vibration(s.rev_limit_freq, s.rev_limit_amp)
 
         # 3. Progressive resistance (exponential: soft early, sharp late).
-        # Capped at throttle_max_force — leaves physical headroom so vibration
-        # effects (gear-shift, rev-limiter) are still felt at full throttle.
-        ratio = (accel - s.accel_deadzone) / max(255 - s.accel_deadzone, 1)
-        force = s.throttle_baseline_force + (s.throttle_max_force - s.throttle_baseline_force) * (ratio ** s.throttle_curve)
-        return rigid(force)
+        return rigid(self._pedal_force(
+            accel,
+            s.accel_deadzone,
+            s.throttle_baseline_force,
+            s.throttle_max_force,
+            s.throttle_curve,
+            s.pedal_full_force_at,
+            s.pedal_value_max,
+        ))
 
     # --- Helpers -------------------------------------------------------------
+
+    @staticmethod
+    def _abs_active(t, s, brake):
+        if not s.enable_abs:
+            return False
+        if brake < s.abs_brake_threshold or t.get("speed", 0.0) < s.abs_min_speed_kmh:
+            return False
+        ratio = _max_abs(t, "tire_slip_ratio")
+        combined = _max_abs(t, "tire_combined_slip")
+        return ratio >= s.abs_slip_ratio_threshold or combined >= s.abs_combined_slip_threshold
+
+    @staticmethod
+    def _pedal_force(value, deadzone, baseline, max_force, curve, full_force_at, value_max):
+        if value >= full_force_at:
+            return RAW_MAX
+        ratio = (value - deadzone) / max(value_max - deadzone, 1)
+        return baseline + (max_force - baseline) * (ratio ** curve)
 
     @staticmethod
     def _ratio(value, max_value):
         if max_value <= 0:
             return 0.0
         return max(0.0, min(float(value) / float(max_value), 1.0))
+
+
+def _max_abs(t, prefix):
+    return max(abs(t.get(f"{prefix}_{wheel}", 0.0)) for wheel in ("fl", "fr", "rl", "rr"))
