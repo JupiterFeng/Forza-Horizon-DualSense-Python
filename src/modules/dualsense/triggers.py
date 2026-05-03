@@ -81,11 +81,11 @@ class TriggerAnimation:
         gear = t.get("gear", 0)
         speed = t.get("speed", 0.0)
 
-        # Detect gear change under power -> arm shift burst
+        # Detect upshifts and downshifts between valid gears -> arm shift burst.
         if (s.enable_gear_shift
-                and self._prev_gear != 0
+                and self._prev_gear > 0
+                and gear > 0
                 and gear != self._prev_gear
-                and accel > s.accel_deadzone
                 and speed > 3.0):
             self._shift_until = now + s.gear_shift_duration_ms / 1000.0
         self._prev_gear = gear

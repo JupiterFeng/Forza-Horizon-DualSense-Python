@@ -57,7 +57,7 @@ Strict priority — **only one effect plays at a time**, so animations never fig
 
 | Priority | Effect | Feel |
 |---------:|--------|------|
-| 1 | **Gear-shift thump** | A short `20 Hz` vibration burst (~100 ms) when the gear changes under throttle and the car is moving. |
+| 1 | **Gear-shift thump** | A short `20 Hz` vibration burst (~100 ms) when shifting up or down while the car is moving. |
 | 2 | **Rev limiter buzz** | A `30 Hz` vibration when RPM is above the redline ratio. |
 | 3 | **Progressive throttle resistance** | Soft exponential resistance from a `1`-force baseline up to `10` during normal throttle. Above ~98% input it jumps to full trigger force (`255`). |
 
@@ -270,7 +270,7 @@ src/
 | Triggers feel like a rock wall before pedal hits 100% | Lower `brake_max_force` / `throttle_max_force`, or raise the relevant `curve` so resistance arrives later. |
 | Triggers feel too stiff at light press | Lower the relevant baseline force, or raise the relevant `curve` for a softer initial press. |
 | Brake "machine-guns" / buzzes when barely pressed | This was the original off↔rigid jitter — already fixed by the always-held baseline. If it returns, raise the deadzone or the baseline force. |
-| No vibration on gear shift | Make sure you're shifting **under power** at >3 km/h; idle / coasting shifts are intentionally ignored. |
+| No vibration on gear shift | Make sure the car is moving faster than 3 km/h and the change is between valid gears. Neutral/invalid gear transitions are intentionally ignored. |
 
 ---
 
