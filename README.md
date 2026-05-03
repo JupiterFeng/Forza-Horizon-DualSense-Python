@@ -188,13 +188,17 @@ uv run main.py --port 5400 --debug
 
 Open [src/modules/settings.py](src/modules/settings.py) and edit any field. There are **no presets, no multipliers, no inheritance** — just one flat dataclass. Changes take effect on next launch.
 
+Every trigger effect has an `enable_*` switch. Set it to `False` if you do not want that effect.
+
 ### Brake (left trigger)
 
 | Field | Default | Effect |
 |-------|--------:|--------|
+| `enable_brake_resistance` | `True` | Toggle the normal progressive brake resistance. |
 | `brake_baseline_force` | `1` | Always-held resistance. Prevents off↔rigid jitter near the deadzone. |
 | `brake_max_force` | `25` | Normal brake resistance before the full-press threshold. |
 | `brake_curve` | `2.5` | Higher = softer early press and sharper resistance near the end. |
+| `enable_handbrake_bonus` | `True` | Toggle the extra handbrake force. |
 | `handbrake_bonus` | `25` | Flat extra rigid force when the handbrake is engaged. |
 | `brake_deadzone` | `10` | Ignore brake input below this raw value (out of 255). |
 | `pedal_full_force_at` | `248` | Pedal value where the trigger jumps to full force (`255`). |
@@ -215,6 +219,7 @@ Open [src/modules/settings.py](src/modules/settings.py) and edit any field. Ther
 
 | Field | Default | Effect |
 |-------|--------:|--------|
+| `enable_throttle_resistance` | `True` | Toggle the normal progressive throttle resistance. |
 | `throttle_baseline_force` | `1` | Always-held resting weight. Prevents off↔rigid jitter near the deadzone. |
 | `throttle_max_force` | `10` | Normal throttle resistance before the full-press threshold. Kept softer than the brake. |
 | `throttle_curve` | `5.2` | Higher = much softer light throttle, with resistance arriving late in the press. |
@@ -229,6 +234,7 @@ Open [src/modules/settings.py](src/modules/settings.py) and edit any field. Ther
 | `gear_shift_freq` | `20` Hz | Lower = deeper thump, higher = sharper click. |
 | `gear_shift_amp` | `255` | Max amplitude (0–255). |
 | `gear_shift_duration_ms` | `100.0` | How long the burst lasts. |
+| `enable_rev_limiter` | `True` | Toggle the rev limiter buzz. |
 | `rev_limit_ratio` | `0.95` | Buzz when `rpm / max_rpm` exceeds this. |
 | `rev_limit_freq` | `30` Hz | Buzz frequency. |
 | `rev_limit_amp` | `255` | Buzz amplitude. |
@@ -240,6 +246,7 @@ Open [src/modules/settings.py](src/modules/settings.py) and edit any field. Ther
 | `udp_host` | `"0.0.0.0"` | UDP bind address. |
 | `udp_port` | `5300` | UDP port (must match FH5). |
 | `udp_timeout` | `0.5` s | Listener timeout (used to detect "no telemetry"). |
+| `enable_startup_pulse` | `True` | Toggle the short trigger pulse on app startup. |
 | `startup_pulse_force` | `150` | Strength of the connect-confirm pulse. |
 
 ---

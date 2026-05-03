@@ -38,7 +38,7 @@ def _find_gamepad():
 class DualSense:
     """Triggers-only DualSense writer. Steam keeps rumble bits untouched."""
 
-    def __init__(self, startup_pulse_force: int = 180):
+    def __init__(self, startup_pulse_force: int = 180, enable_startup_pulse: bool = True):
         self.dev = None
         self.lay = USB
         self._lock = threading.Lock()
@@ -47,6 +47,7 @@ class DualSense:
         self._running = False
         self._thread = None
         self._pulse_force = startup_pulse_force
+        self._enable_startup_pulse = enable_startup_pulse
 
     def open(self):
         info = _find_gamepad()
@@ -61,10 +62,11 @@ class DualSense:
         self._thread = threading.Thread(target=self._io, daemon=True)
         self._thread.start()
 
-        # Pulse confirms trigger writes are landing.
-        pulse = (M_RIGID, 0, self._pulse_force)
-        self.set(pulse, pulse); time.sleep(0.2)
-        self.set(off(), off())
+        if self._enable_startup_pulse:
+            # Pulse confirms trigger writes are landing.
+            pulse = (M_RIGID, 0, self._pulse_force)
+            self.set(pulse, pulse); time.sleep(0.2)
+            self.set(off(), off())
 
     def close(self):
         if not self.dev:

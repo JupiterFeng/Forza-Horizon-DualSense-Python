@@ -12,6 +12,8 @@ Right trigger (throttle), strict priority — only one effect at a time:
 Left trigger (brake): telemetry tire-slip pulse under ABS-like braking,
 otherwise exponential rigid resistance, baseline -> max.
 Handbrake adds a flat bonus.
+
+Every effect has an enable_* switch in settings.py.
 """
 
 import time
@@ -55,22 +57,29 @@ class TriggerAnimation:
     def _brake(self, t, s):
         brake = t.get("brake", 0)
 
+        if self._abs_active(t, s, brake):
+            return vibration(s.abs_freq, s.abs_amp)
+
+        if not s.enable_brake_resistance:
+            if s.enable_handbrake_bonus and t.get("handbrake", 0):
+                return rigid(s.handbrake_bonus)
+            return off()
+
         # Always hold baseline so the trigger never toggles off<->rigid (no
         # "machine gun" jitter near the deadzone).
         if brake < s.brake_deadzone:
-            return rigid(s.brake_baseline_force)
-        if self._abs_active(t, s, brake):
-            return vibration(s.abs_freq, s.abs_amp)
-        force = self._pedal_force(
-            brake,
-            s.brake_deadzone,
-            s.brake_baseline_force,
-            s.brake_max_force,
-            s.brake_curve,
-            s.pedal_full_force_at,
-            s.pedal_value_max,
-        )
-        if t.get("handbrake", 0):
+            force = s.brake_baseline_force
+        else:
+            force = self._pedal_force(
+                brake,
+                s.brake_deadzone,
+                s.brake_baseline_force,
+                s.brake_max_force,
+                s.brake_curve,
+                s.pedal_full_force_at,
+                s.pedal_value_max,
+            )
+        if s.enable_handbrake_bonus and t.get("handbrake", 0):
             force += s.handbrake_bonus
         return rigid(force)
 
@@ -92,17 +101,20 @@ class TriggerAnimation:
 
         # 1. Gear shift burst must win full-throttle too; FH5 shifts usually
         # happen while accel is pinned.
-        if now < self._shift_until:
+        if s.enable_gear_shift and now < self._shift_until:
             return vibration(s.gear_shift_freq, s.gear_shift_amp)
+
+        # 2. Rev limiter
+        rpm_r = self._ratio(t.get("rpm", 0.0), t.get("max_rpm", 0.0))
+        if s.enable_rev_limiter and accel >= s.accel_deadzone and rpm_r > s.rev_limit_ratio:
+            return vibration(s.rev_limit_freq, s.rev_limit_amp)
+
+        if not s.enable_throttle_resistance:
+            return off()
 
         # No throttle pressed -> hold baseline (no off<->rigid toggle jitter)
         if accel < s.accel_deadzone:
             return rigid(s.throttle_baseline_force)
-
-        # 2. Rev limiter
-        rpm_r = self._ratio(t.get("rpm", 0.0), t.get("max_rpm", 0.0))
-        if rpm_r > s.rev_limit_ratio:
-            return vibration(s.rev_limit_freq, s.rev_limit_amp)
 
         # 3. Progressive resistance (exponential: soft early, sharp late).
         return rigid(self._pedal_force(

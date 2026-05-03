@@ -10,7 +10,10 @@ log = logging.getLogger("fh5ds")
 
 
 def run(s: Settings) -> None:
-    ds = dualsense.DualSense(startup_pulse_force=s.startup_pulse_force)
+    ds = dualsense.DualSense(
+        startup_pulse_force=s.startup_pulse_force,
+        enable_startup_pulse=s.enable_startup_pulse,
+    )
     ds.open()
     try:
         with udplistener.UDPListener(s.udp_host, s.udp_port, s.udp_timeout) as listener:

@@ -25,9 +25,11 @@ class Settings:
     # Baseline is ALWAYS held (no off()) so the trigger never "machine-guns"
     # by toggling rigid<->off around the deadzone.
     # Normal ramp max stays below 255; above 98% brake uses force 255.
+    enable_brake_resistance: bool = True
     brake_baseline_force: int = 1  # constant weight when not pressed
     brake_max_force: int = 25      # normal ramp max below 100% input
     brake_curve: float = 2.5        # >1 = soft early, sharp at the end
+    enable_handbrake_bonus: bool = True
     handbrake_bonus: int = 25       # extra rigid when handbrake engaged
 
     # --- ABS feel from tire slip telemetry (left trigger) ---
@@ -44,11 +46,13 @@ class Settings:
     # compared to a brake pedal, and we need finger-travel budget free for the
     # gear-shift / rev-limit vibration animations.
     # Above 98% throttle uses force 255 inside the same ramp logic.
+    enable_throttle_resistance: bool = True
     throttle_baseline_force: int = 1
     throttle_max_force: int = 10    # softer than brake on purpose
     throttle_curve: float = 5.2     # steeper = even softer at light press
 
     # --- Rev limiter buzz (right trigger) ---
+    enable_rev_limiter: bool = True
     rev_limit_ratio: float = 0.95   # rpm / max_rpm above this = limiter
     rev_limit_freq: int = 30
     rev_limit_amp: int = 255
@@ -60,4 +64,5 @@ class Settings:
     gear_shift_duration_ms: float = 100.0
 
     # --- Misc ---
+    enable_startup_pulse: bool = True
     startup_pulse_force: int = 150
