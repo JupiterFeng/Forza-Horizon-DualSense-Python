@@ -153,6 +153,7 @@ You can configure Steam to launch the DualSense script automatically in the back
 
 Now, whenever you start the game from Steam, the Python script will quietly launch in a minimized window just before the game opens. No `.bat` files needed!
 
+![1778765787413](img/steaming.png)
 ---
 
 ## ⚙️ CLI options
