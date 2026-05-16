@@ -128,9 +128,16 @@ def brake_resistance(t, s):
 
 # --- Throttle (R2) effects ------------------------------------------------
 
-def gear_shift_burst(s):
-    """Short vibration burst that keeps the wall (caller decides when it's armed)."""
-    return vibration_wall(_amp_to_strength(s.gear_shift_amp), s.gear_shift_freq, s.wall_zones)
+def gear_shift_burst(s, accel):
+    """Short vibration burst (caller decides when it's armed).
+    If the pedal is up in the wall zones, use Pulse_AB so the buzz kicks
+    against the wall (the satisfying version). Below the wall, fall back to
+    plain mode 0x06 so the buzz is still felt — Pulse_AB needs the pedal
+    pressed into the active zones to produce perceptible force."""
+    wall_floor = RAW_MAX - s.wall_zones * (RAW_MAX // 10)
+    if accel >= wall_floor:
+        return vibration_wall(_amp_to_strength(s.gear_shift_amp), s.gear_shift_freq, s.wall_zones)
+    return vibration(s.gear_shift_freq, s.gear_shift_amp)
 
 
 def rev_limiter_buzz(t, s):
@@ -174,7 +181,17 @@ class TriggerAnimation:
     def update(self, t, s):
         if not t.get("on", False):
             return off(), off()
-        return self._brake(t, s), self._throttle(t, s, time.monotonic())
+        now = time.monotonic()
+        # Arm shift burst on up/downshift between valid gears while moving.
+        # Done here so both triggers share the same window — downshift while
+        # braking should buzz LT and RT together.
+        gear, speed = t.get("gear", 0), t.get("speed", 0.0)
+        if ((s.enable_gear_shift or s.enable_gear_shift_brake)
+                and self._prev_gear > 0 and gear > 0
+                and gear != self._prev_gear and speed > 3.0):
+            self._shift_until = now + s.gear_shift_duration_ms / 1000.0
+        self._prev_gear = gear
+        return self._brake(t, s, now), self._throttle(t, s, now)
 
     @staticmethod
     def _wall_state(value, engaged, engage_at, release_at):
@@ -183,7 +200,9 @@ class TriggerAnimation:
             return value >= release_at
         return value >= engage_at
 
-    def _brake(self, t, s):
+    def _brake(self, t, s, now):
+        if s.enable_gear_shift_brake and now < self._shift_until:
+            return gear_shift_burst(s, t.get("brake", 0))
         pulse = abs_pulse(t, s)
         if pulse:
             return pulse
@@ -195,15 +214,8 @@ class TriggerAnimation:
         return brake_resistance(t, s)
 
     def _throttle(self, t, s, now):
-        # Arm shift burst on up/downshift between valid gears while moving.
-        gear, speed = t.get("gear", 0), t.get("speed", 0.0)
-        if (s.enable_gear_shift and self._prev_gear > 0 and gear > 0
-                and gear != self._prev_gear and speed > 3.0):
-            self._shift_until = now + s.gear_shift_duration_ms / 1000.0
-        self._prev_gear = gear
-
         if s.enable_gear_shift and now < self._shift_until:
-            return gear_shift_burst(s)
+            return gear_shift_burst(s, t.get("accel", 0))
         # Rev limiter: hold the buzz for `rev_limit_hold_ms` after each trigger
         # so the rpm bouncing against the limit reads as a steady pulse instead
         # of a stuttering on/off.

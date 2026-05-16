@@ -38,15 +38,16 @@ DEFAULT_LOG_LEVEL = "INFO"
 log = logging.getLogger("fhds")
 
 L2_TOGGLES = [
-    ("enable_brake_resistance", "Brake resistance"),
-    ("enable_handbrake_bonus",  "Handbrake bonus"),
-    ("enable_abs",              "ABS pulse"),
+    ("enable_brake_resistance", "Brake stiffness"),
+    ("enable_handbrake_bonus",  "Handbrake stiffness bonus"),
+    ("enable_abs",              "ABS rumble"),
+    ("enable_gear_shift_brake", "Shift thump"),
 ]
 
 R2_TOGGLES = [
-    ("enable_throttle_resistance", "Throttle resistance"),
-    ("enable_rev_limiter",         "Rev limiter"),
-    ("enable_gear_shift",          "Gear shift thump"),
+    ("enable_throttle_resistance", "Throttle stiffness"),
+    ("enable_rev_limiter",         "Redline buzz"),
+    ("enable_gear_shift",          "Shift thump"),
 ]
 
 # (section title, [(attr, label), ...])
