@@ -79,9 +79,10 @@ SETTING_SECTIONS = [
         ("abs_amp",                     "Amplitude",               0, 255),
     ]),
     ("Rev limiter", [
-        ("rev_limit_ratio", "Trigger at RPM ratio", 0.0, 1.0),
-        ("rev_limit_freq",  "Frequency (Hz)",       0, 255),
-        ("rev_limit_amp",   "Amplitude",            0, 255),
+        ("rev_limit_ratio",   "Trigger at RPM ratio", 0.0, 1.0),
+        ("rev_limit_freq",    "Frequency (Hz)",       0, 255),
+        ("rev_limit_amp",     "Amplitude",            0, 255),
+        ("rev_limit_hold_ms", "Hold (ms)",            0.0, 1000.0),
     ]),
     ("Gear shift thump", [
         ("gear_shift_freq",         "Frequency (Hz)", 0, 255),

@@ -24,7 +24,8 @@ import time
 M_OFF      = 0x05
 M_RIGID    = 0x01
 M_PULSE    = 0x06
-M_FEEDBACK = 0x21
+M_FEEDBACK = 0x21  # MultiplePositionFeedback — per-zone static strength
+M_PULSE_AB = 0x26  # Pulse_AB — per-zone strength + rhythmic kickback (vibration that keeps resistance)
 RAW_MAX = 255
 
 
@@ -41,7 +42,33 @@ def rigid(force):
     return (M_RIGID, (0, _clamp(force)))
 
 def vibration(freq, amp):
+    """Mode 0x06: (freq, amp). Firmware-defined units; tune via settings."""
     return (M_PULSE, (_clamp(freq), _clamp(amp)))
+
+def vibration_wall(amp, freq, wall_zones):
+    """Pulse_AB (0x26): rhythmic resistance that preserves the wall.
+
+    Lower zones (10 - wall_zones) vibrate at strength `amp` (1-8); the top
+    `wall_zones` (1-9) stay at max strength so the firmware wall holds
+    during the buzz. One byte of frequency follows the per-zone payload."""
+    a = max(1, min(8, int(amp)))
+    w = max(1, min(9, int(wall_zones)))
+    zones = [a] * (10 - w) + [8] * w
+    active = strength = 0
+    for i, s in enumerate(zones):
+        if s:
+            active |= 1 << i
+            strength |= (s - 1) << (3 * i)
+    return (M_PULSE_AB, (
+        active & 0xFF, (active >> 8) & 0xFF,
+        strength & 0xFF, (strength >> 8) & 0xFF, (strength >> 16) & 0xFF, (strength >> 24) & 0xFF,
+        _clamp(freq), 0, 0, 0,
+    ))
+
+
+def _amp_to_strength(amp_byte):
+    """Map a 0-255 amplitude byte (mode 0x06 scale) to 1-8 firmware strength."""
+    return max(1, min(8, (max(0, int(amp_byte)) // 32) + 1))
 
 def feedback(zones):
     """MultiplePositionFeedback: 10 per-zone strengths (0-8), firmware-enforced."""
@@ -65,7 +92,10 @@ def _max_slip(t, prefix):
 # --- Brake (L2) effects ---------------------------------------------------
 
 def abs_pulse(t, s):
-    """Tire-slip vibration under hard braking, else None."""
+    """Tire-slip vibration under hard braking, else None.
+    Uses plain mode 0x06 (no wall): the brake wall would block the buzz, and
+    while ABS is firing the driver should feel the simulated wheel-lock
+    chatter, not a static stop."""
     if not s.enable_abs:
         return None
     if t.get("brake", 0) < s.abs_brake_threshold or t.get("speed", 0.0) < s.abs_min_speed_kmh:
@@ -99,12 +129,14 @@ def brake_resistance(t, s):
 # --- Throttle (R2) effects ------------------------------------------------
 
 def gear_shift_burst(s):
-    """Short vibration burst (caller decides when it's armed)."""
-    return vibration(s.gear_shift_freq, s.gear_shift_amp)
+    """Short vibration burst that keeps the wall (caller decides when it's armed)."""
+    return vibration_wall(_amp_to_strength(s.gear_shift_amp), s.gear_shift_freq, s.wall_zones)
 
 
 def rev_limiter_buzz(t, s):
-    """Vibration above the rev-limit ratio, else None."""
+    """Vibration above the rev-limit ratio, else None.
+    Plain mode 0x06 so the buzz is at full perceptible amplitude — the
+    throttle is already pinned against the wall by the time this fires."""
     if not s.enable_rev_limiter or t.get("accel", 0) < s.accel_deadzone:
         return None
     max_rpm = t.get("max_rpm", 0.0)
@@ -134,6 +166,7 @@ class TriggerAnimation:
     def __init__(self, settings):
         self._prev_gear = 0
         self._shift_until = 0.0
+        self._rev_until = 0.0
         self._throttle_wall = False
         self._brake_wall = False
         self._wall = build_wall(settings.wall_zones)
@@ -171,9 +204,15 @@ class TriggerAnimation:
 
         if s.enable_gear_shift and now < self._shift_until:
             return gear_shift_burst(s)
+        # Rev limiter: hold the buzz for `rev_limit_hold_ms` after each trigger
+        # so the rpm bouncing against the limit reads as a steady pulse instead
+        # of a stuttering on/off.
         buzz = rev_limiter_buzz(t, s)
         if buzz:
+            self._rev_until = now + s.rev_limit_hold_ms / 1000.0
             return buzz
+        if now < self._rev_until and s.enable_rev_limiter:
+            return vibration(s.rev_limit_freq, s.rev_limit_amp)
         if not s.enable_throttle_resistance:
             self._throttle_wall = False
             return off()
