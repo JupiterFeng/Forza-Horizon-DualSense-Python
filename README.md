@@ -70,6 +70,8 @@ The launcher handles everything: downloads the app, installs Python if needed, a
 
 > **Linux extras:** install `libhidapi` (`sudo apt install libhidapi-hidraw0` / `sudo pacman -S hidapi` / `sudo dnf install hidapi`) and the udev rule from `app/packaging/linux/70-dualsense.rules`. Then unplug/replug the controller once.
 
+> **Xbox App / Microsoft Store players:** Use **DS4Windows** to make the game recognize your controller.
+
 <details>
 <summary>Manual install (for developers)</summary>
 
