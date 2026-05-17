@@ -285,6 +285,7 @@ Built by **[HamzaYslmn](https://github.com/HamzaYslmn)**.
 ### 💛 Sponsors
 
 - **[Jared (jmac122)](https://github.com/jmac122)** — gifted me Forza Horizon 6 so this project could keep moving forward. Thank you, Jared!
+- **[BambinoPinguino](https://github.com/BambinoPinguino)** — thank you for your Tea!
 
 ---
 *Built for an immersive racing experience*
