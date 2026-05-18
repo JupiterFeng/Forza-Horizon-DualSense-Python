@@ -110,3 +110,4 @@ def rename(old: str, new: str) -> str:
     active = final if store["active"] == old else store["active"]
     _persist(profs_new, active)
     return final
+
