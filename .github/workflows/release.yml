@@ -24,22 +24,39 @@ jobs:
           if [[ "$GITHUB_REF" == refs/tags/* ]]; then
             tag="${GITHUB_REF#refs/tags/}"
             echo "tag=$tag" >> "$GITHUB_OUTPUT"
+            echo "prerelease=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           msg=$(git log -1 --pretty=%s)
           if [[ "$msg" =~ ^release[[:space:]]+(v[0-9]+\.[0-9]+\.[0-9]+) ]]; then
             tag="${BASH_REMATCH[1]}"
-            if git rev-parse "$tag" >/dev/null 2>&1; then
-              echo "Tag $tag already exists, skipping."
-              exit 0
-            fi
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
-            git tag "$tag"
-            git push origin "$tag"
-            echo "tag=$tag" >> "$GITHUB_OUTPUT"
+            prerelease=false
+          elif [[ "$msg" =~ ^prerelease[[:space:]]+(v[0-9]+\.[0-9]+\.[0-9]+) ]]; then
+            tag="${BASH_REMATCH[1]}"
+            prerelease=true
           else
-            echo "Commit message does not match 'release vX.Y.Z'."
+            echo "Commit message does not match 'release vX.Y.Z' or 'prerelease vX.Y.Z'."
+            exit 0
+          fi
+          if git rev-parse "$tag" >/dev/null 2>&1; then
+            echo "Tag $tag already exists, skipping."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag "$tag"
+          git push origin "$tag"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "prerelease=$prerelease" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve release assets
+        if: steps.tag.outputs.tag != ''
+        id: assets
+        run: |
+          if [[ "${{ steps.tag.outputs.prerelease }}" == "true" ]]; then
+            echo "files=" >> "$GITHUB_OUTPUT"
+          else
+            printf 'files<<EOF\nwin_start.bat\nlinux_start.sh\nEOF\n' >> "$GITHUB_OUTPUT"
           fi
 
       - name: Create GitHub Release
@@ -48,12 +65,10 @@ jobs:
         with:
           tag_name: ${{ steps.tag.outputs.tag }}
           name: ${{ steps.tag.outputs.tag }}
+          prerelease: ${{ steps.tag.outputs.prerelease == 'true' }}
           generate_release_notes: true
           body: |
             > **Heads up**
-            > - If new features don't work, your launcher version may have changed. Try downloading and running the latest `win_start.bat` / `linux_start.sh` again from this release.
+            > - If new features don't work, your launcher version may have changed. Try downloading and running the latest `win_start.bat` / `linux_start.sh` again from the latest stable release.
             > - Save your `app/src/user_preferences.json` somewhere before updating to avoid losing your profiles and settings.
-          files: |
-            win_start.bat
-            linux_start.sh
-
+          files: ${{ steps.assets.outputs.files }}
