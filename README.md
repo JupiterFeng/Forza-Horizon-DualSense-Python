@@ -18,11 +18,12 @@
 1. [What it does](#-what-it-does)
 2. [Install](#-install)
 3. [In-game setup](#-in-game-setup)
-4. [Run it](#-run-it)
-5. [Auto-launch with Steam](#-auto-launch-with-steam)
-6. [Tuning the feel](#-tuning-the-feel)
-7. [Troubleshooting](#-troubleshooting)
-8. [Credits](#-credits)
+4. [Enable Steam Haptics](#-enable-steam-haptics)
+5. [Run it](#-run-it)
+6. [Auto-launch with Steam](#-auto-launch-with-steam)
+7. [Tuning the feel](#-tuning-the-feel)
+8. [Troubleshooting](#-troubleshooting)
+9. [Credits](#-credits)
 
 
 
@@ -104,6 +105,23 @@ In Forza Horizon, open **Settings → HUD and Gameplay** and scroll to the botto
   &nbsp;
   <img src="img/tr.png" alt="Turkish Settings" width="48%" style="border-radius: 8px;">
 </p>
+
+---
+
+## 🔊 Enable Steam Haptics
+
+**Steam** can vibrate the left and right rumble motors on your DualSense controller. To enable them:
+
+### In Steam:
+1. Right-click **Forza Horizon** in your library → **Properties**.
+2. Go to **Controller → Additional Settings**.
+3. Make sure **DualSense vibration** is turned **ON**.
+
+### In-game (Forza Horizon):
+1. Open **Settings → Advanced Controls**.
+2. Find the **Vibration** option and enable it.
+
+> ℹ️ **About Adaptive Triggers:** Steam doesn't support DualSense adaptive triggers for this game. That's what **this app** does — it adds realistic trigger feedback (brake resistance, engine feedback, ABS pulses, gear thumps, rev limiter buzz) on top of the rumble that Steam provides.
 
 ---
 
