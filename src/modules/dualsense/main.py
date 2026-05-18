@@ -130,6 +130,9 @@ class DualSense:
 
     def open(self):
         """Start the I/O thread. Never raises if the controller is absent."""
+        hidhide.ensure_whitelisted()
+        if hidhide.is_detected() and not hidhide.is_whitelisted():
+            self._persistent = True
         self._running = True
         self._thread = threading.Thread(target=self._io, daemon=True)
         self._thread.start()
@@ -178,9 +181,6 @@ class DualSense:
         self._open_hinted = self._waiting_hinted = False
         self._last_input_at = time.monotonic()
         log.info("DualSense connected (%s)", "BT" if self.lay["bt"] else "USB")
-        if not self._persistent and hidhide.is_present():
-            self._persistent = True
-            log.info("HidHide detected — reconnect disabled for this session")
 
         if self._enable_startup_pulse:
             pulse = (M_RIGID, (0, self._pulse_force))
