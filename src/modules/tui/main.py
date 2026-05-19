@@ -16,6 +16,7 @@ from .controls_tab import ControlsTab
 from .logs_tab import DEFAULT_LOG_LEVEL, LogsTab
 from .profiles_tab import ProfilesTab
 from .settings_tab import SettingsTab
+from .updates_tab import UpdatesTab
 
 log = logging.getLogger("fhds")
 
@@ -96,6 +97,8 @@ class TriggerTUI(App):
                 yield ProfilesTab(self.settings)
             with TabPane("Settings", id="tab-settings"):
                 yield SettingsTab(self.settings)
+            with TabPane("Updates", id="tab-updates"):
+                yield UpdatesTab(self.settings)
             with TabPane("Logs", id="tab-logs"):
                 yield LogsTab()
         with Horizontal(id="bottombar"):

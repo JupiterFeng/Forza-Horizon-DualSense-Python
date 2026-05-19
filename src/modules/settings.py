@@ -87,6 +87,11 @@ class Settings:
     enable_reconnect: bool = False
     reconnect_interval_s: float = 5.0
 
+    # Whether ZUV should check for updates at launch. Default off so the user
+    # isn't prompted every run; toggle on from the Updates tab to re-enable.
+    # The toggle writes a sentinel file the ZUV loader reads on next launch.
+    check_for_updates: bool = False
+
     # Auto-exit when game closes (Windows + Linux/Proton). Telemetry-lost is a fallback for Task Manager kills.
     exit_on_game_close: bool = True
     game_process_name_contains: tuple = ("forza",)

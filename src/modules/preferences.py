@@ -26,7 +26,7 @@ PYPROJECT = Path(__file__).resolve().parent.parent / "pyproject.toml"
 DEFAULT_PROFILE_NAME = "Default"
 
 # Settings fields persisted at the top of the file, shared across all profiles.
-GLOBAL_FIELDS = frozenset({"enable_reconnect"})
+GLOBAL_FIELDS = frozenset({"enable_reconnect", "check_for_updates"})
 
 _SIMPLE = (bool, int, float, str)
 

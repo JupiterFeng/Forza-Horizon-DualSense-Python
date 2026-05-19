@@ -17,6 +17,11 @@ so Steam Input still handles rumble.
 
 ## Layout
 
+One-liner:
+```powershell
+uvx zuv build src -o app/fhds.zuv.py --update-repo HamzaYslmn/Forza-Horizon-DualSense-Python
+```
+
 ```
 src/
   main.py                    # entry: IS_ZUV check, args, TUI/headless boot
