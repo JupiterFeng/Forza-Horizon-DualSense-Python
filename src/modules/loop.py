@@ -20,13 +20,13 @@ def run(ds, listener, s, stop_event=None):
     last_log = 0.0
     pkt_count = 0
 
-    watcher = ProcessWatcher(s.game_process_name_contains, s.game_poll_interval_s) if s.exit_on_game_close else None
+    watcher = ProcessWatcher(s.game_process_name_contains, s.game_poll_interval_s)
 
     while True:
         if stop_event is not None and stop_event.is_set():
             break
         now = time.monotonic()
-        if watcher and watcher.should_exit():
+        if s.exit_on_game_close and watcher.should_exit():
             log.info("Game process closed — exiting.")
             break
 

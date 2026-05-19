@@ -44,14 +44,25 @@ SETTING_SECTIONS = [
         ("gear_shift_amp",         "Amplitude",      0, 255),
         ("gear_shift_duration_ms", "Duration (ms)",  0.0, 2000.0),
     ]),
-    ("Misc", [
-        ("startup_pulse_force",  "Startup pulse force",    0, 255),
+]
+
+SYSTEM_SECTIONS = [
+    ("Startup pulse", [
+        ("startup_pulse_force", "Startup pulse force", 0, 255),
+    ]),
+    ("Reconnect", [
         ("enable_reconnect",     "Auto-reconnect controller (disable for HidHide)", None, None),
         ("reconnect_interval_s", "Reconnect interval (s)", 0.1, 60.0),
     ]),
+    ("Game detection", [
+        ("exit_on_game_close",   "Detect game (auto-exit when it closes)", None, None),
+        ("game_poll_interval_s", "Poll interval (s)", 0.1, 60.0),
+    ]),
 ]
 
-SETTING_RANGES = {a: (lo, hi) for _, fields in SETTING_SECTIONS
+SETTING_RANGES = {a: (lo, hi)
+                  for sections in (SETTING_SECTIONS, SYSTEM_SECTIONS)
+                  for _, fields in sections
                   for a, _, lo, hi in fields if lo is not None and hi is not None}
 
 
@@ -63,21 +74,24 @@ def _fmt_range(lo, hi):
 
 class SettingsTab(VerticalScroll):
     DEFAULT_CSS = """
-    SettingsTab { width: 1fr; height: 1fr; padding: 1 2; }
-    SettingsTab Label.section { text-style: bold; color: $accent; padding: 1 0 0 1; }
-    SettingsTab .row { height: 3; width: 1fr; align-vertical: middle; padding: 0 1; }
-    SettingsTab .row Label { width: 1fr; height: 3; content-align: left middle; }
-    SettingsTab .row Input { width: 16; min-width: 10; max-width: 20; height: 3; }
-    SettingsTab .row Switch { margin-right: 2; }
+    SettingsTab, SystemTab { width: 1fr; height: 1fr; padding: 1 2; }
+    SettingsTab Label.section, SystemTab Label.section { text-style: bold; color: $accent; padding: 1 0 0 1; }
+    SettingsTab .row, SystemTab .row { height: 3; width: 1fr; align-vertical: middle; padding: 0 1; }
+    SettingsTab .row Label, SystemTab .row Label { width: 1fr; height: 3; content-align: left middle; }
+    SettingsTab .row Input, SystemTab .row Input { width: 16; min-width: 10; max-width: 20; height: 3; }
+    SettingsTab .row Switch, SystemTab .row Switch { margin-right: 2; }
     SettingsTab #reset-settings { width: 1fr; margin: 2 0 1 0; }
     """
+
+    SECTIONS = SETTING_SECTIONS
+    SHOW_RESET = True
 
     def __init__(self, settings):
         super().__init__()
         self.settings = settings
 
     def compose(self) -> ComposeResult:
-        for section, fields in SETTING_SECTIONS:
+        for section, fields in self.SECTIONS:
             yield Label(section, classes="section")
             for attr, label, lo, hi in fields:
                 value = getattr(self.settings, attr, None)
@@ -92,7 +106,8 @@ class SettingsTab(VerticalScroll):
                 with Horizontal(classes="row"):
                     yield Label(f"{label} ({_fmt_range(lo, hi)})")
                     yield Input(value=str(value), id=f"set-{attr}", type=input_type)
-        yield Button("Reset to defaults", id="reset-settings", variant="error")
+        if self.SHOW_RESET:
+            yield Button("Reset to defaults", id="reset-settings", variant="error")
 
     def on_switch_changed(self, event: Switch.Changed):
         attr = event.switch.id
@@ -172,3 +187,8 @@ class SettingsTab(VerticalScroll):
             log.info("%s = %s", attr, new)
         # Always push live (see on_switch_changed for the profile-load reason).
         self._push_live(attr, new)
+
+
+class SystemTab(SettingsTab):
+    SECTIONS = SYSTEM_SECTIONS
+    SHOW_RESET = False

@@ -5,6 +5,9 @@ import sys
 import traceback
 from datetime import datetime
 from pathlib import Path
+from dotenv import load_dotenv
+load_dotenv("dev.env")
+
 
 from modules import dualsense, udplistener, setup_logging, loop
 from modules import preferences

@@ -95,5 +95,5 @@ class Settings:
     # Auto-exit when game closes (Windows + Linux/Proton). Telemetry-lost is a fallback for Task Manager kills.
     exit_on_game_close: bool = True
     game_process_name_contains: tuple = ("forza",)
-    game_poll_interval_s: float = 1.0
+    game_poll_interval_s: float = 2.0
     telemetry_lost_exit_s: float = 60.0

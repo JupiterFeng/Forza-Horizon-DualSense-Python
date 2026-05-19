@@ -25,8 +25,17 @@ PATH = _DATA / "user_preferences.json"
 PYPROJECT = Path(__file__).resolve().parent.parent / "pyproject.toml"
 DEFAULT_PROFILE_NAME = "Default"
 
-# Settings fields persisted at the top of the file, shared across all profiles.
-GLOBAL_FIELDS = frozenset({"enable_reconnect", "check_for_updates"})
+# System fields — shared across profiles and preserved across launches.
+# Everything else lives in the active profile and is wiped from Default each launch.
+GLOBAL_FIELDS = frozenset({
+    "enable_reconnect",
+    "reconnect_interval_s",
+    "enable_startup_pulse",
+    "startup_pulse_force",
+    "exit_on_game_close",
+    "game_poll_interval_s",
+    "check_for_updates",
+})
 
 _SIMPLE = (bool, int, float, str)
 
@@ -126,6 +135,20 @@ def _ensure_active(raw: dict, s) -> dict:
         raw["active_profile"] = DEFAULT_PROFILE_NAME
     elif raw["active_profile"] not in raw["profiles"]:
         raw["active_profile"] = sorted(raw["profiles"].keys(), key=str.lower)[0]
+    # Migrate global fields out of per-profile snapshots (older versions stored
+    # them there). Active profile wins so the user's in-use value carries over.
+    active_snap = raw["profiles"].get(raw["active_profile"], {})
+    for k in GLOBAL_FIELDS:
+        if k not in raw["globals"]:
+            if k in active_snap:
+                raw["globals"][k] = active_snap[k]
+            else:
+                for prof in raw["profiles"].values():
+                    if k in prof:
+                        raw["globals"][k] = prof[k]
+                        break
+        for prof in raw["profiles"].values():
+            prof.pop(k, None)
     for k, v in _global_fields(s).items():
         raw["globals"].setdefault(k, v)
     return raw
@@ -138,10 +161,10 @@ def load(s) -> None:
     can prompt the user before any destructive recovery.
     """
     raw = _read_raw()
-    if raw and raw.get("version") and raw["version"] != _version():
-        log.info("Preferences version changed (%s -> %s).",
-                 raw.get("version"), _version() or "unknown")
     raw = _ensure_active(raw, s)
+    # Reset Default on every launch so updates ship new tuning automatically;
+    # named profiles and globals are preserved.
+    raw["profiles"][DEFAULT_PROFILE_NAME] = _profile_fields(type(s)())
     _write(raw)
     snap = dict(raw["globals"])
     snap.update(raw["profiles"][raw["active_profile"]])

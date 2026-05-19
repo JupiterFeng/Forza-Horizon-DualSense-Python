@@ -35,6 +35,9 @@ class ProfilesTab(Vertical):
         width: 1fr; height: auto; padding: 1 0 0 0;
         color: $text-muted; text-style: italic;
     }
+    ProfilesTab #profile-note {
+        width: 1fr; height: auto; padding: 1 0 0 0; color: $warning;
+    }
     App.-narrow ProfilesTab .toolbar { layout: vertical; }
     App.-narrow ProfilesTab .toolbar Button { width: 1fr; margin: 0 0 1 0; }
     App.-narrow ProfilesTab .save-row { layout: vertical; }
@@ -58,6 +61,14 @@ class ProfilesTab(Vertical):
         with Horizontal(classes="save-row"):
             yield Input(placeholder="New profile name", id="profile-name")
             yield Button("Save", id="profile-save", variant="success")
+        yield Static(
+            "Note: the [b]Default[/] profile is reset to built-in values every time "
+            "the app launches so new features and tuning come through. System "
+            "settings (System tab) are preserved. To keep your own tuning across "
+            "launches, save it as a named profile here.",
+            id="profile-note",
+            markup=True,
+        )
         yield Static(f"File: {preferences.PATH}", id="profile-path")
 
     def on_mount(self):
