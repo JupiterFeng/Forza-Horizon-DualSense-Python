@@ -80,7 +80,17 @@ The launcher handles downloading the app, preparing the environment, and running
 
 > **Linux extras:** install `libhidapi` (`sudo apt install libhidapi-hidraw0` / `sudo pacman -S hidapi` / `sudo dnf install hidapi`) and the udev rule from `app/packaging/linux/70-dualsense.rules`. Then unplug/replug the controller once.
 
-> **Xbox App / Microsoft Store players:** Use **DS4Windows** so the game recognizes your controller. Please note that HidHide can interfere with this app. I recommend **disabling HidHide**. Alternatively, you can launch this app *before* opening DS4Windows, but be aware that you won't be able to reconnect your controller if it disconnects.
+### 🎮 Playing with DS4Windows (Xbox App / Windows Store users)
+
+If you are playing the game via the Xbox App or Microsoft Store, you will need **DS4Windows** for the game to recognize your controller as an Xbox controller. 
+
+Because DS4Windows uses **HidHide**, it can hide the DualSense controller from this app and prevent a successful connection. To avoid this, **you must start the programs in this exact order**:
+
+1. **First, launch THIS APP** (`win_start.bat`) and wait for the short pulse on the triggers.
+2. **Second, launch DS4Windows.**
+3. **Finally, launch Forza Horizon.**
+
+*(Note: If your controller disconnects while playing, you will have to close DS4Windows, restart this app, and then open DS4Windows again. **If you want the app to reconnect automatically upon controller disconnection, you must keep the "Hide DS4 Controller" setting OFF in DS4Windows.**)*
 
 <details>
 <summary>Manual install (for developers)</summary>
