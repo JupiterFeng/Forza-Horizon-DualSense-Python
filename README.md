@@ -10,7 +10,7 @@
 
 <div align="center">
   <a href="https://www.youtube.com/watch?v=-3Cp0PfL52Y">
-    <img src="https://img.youtube.com/vi/-3Cp0PfL52Y/hqdefault.jpg" alt="Forza Horizon DualSense Adaptive Trigger Mod" style="width:100%;">
+    <img src="img/tuiyoutube.png" alt="Forza Horizon DualSense Adaptive Trigger Mod" style="width:100%;">
   </a>
 </div>
 
