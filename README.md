@@ -246,5 +246,7 @@ Built by **[HamzaYslmn](https://github.com/HamzaYslmn)**.
 
 - **[BambinoPinguino](https://github.com/BambinoPinguino)** — thank you for your Tea!
 
+- **[Ereldun](https://steamcommunity.com/)** — thank you for your Coffee!
+
 ---
 *Built for an immersive racing experience*
