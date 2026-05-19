@@ -23,24 +23,24 @@ class Settings:
     # Resistance: rigid curve 0..wall_engage_at -> baseline..max_force, firmware wall at 100%.
     enable_brake_resistance: bool = True
     brake_deadzone: int = 50
-    brake_baseline_force: int = 10
-    brake_max_force: int = 60                 # rigid force at brake_wall_engage_at (peak of the curve before the wall)
+    brake_baseline_force: int = 20
+    brake_max_force: int = 80                 # rigid force at brake_wall_engage_at (peak of the curve before the wall)
     brake_curve: float = 5.0                  # parabolic: light through mid travel, sharply firm near the wall
     brake_wall_engage_at: int = 250           # accel byte to switch to firmware wall
     brake_wall_release_at: int = 200          # accel byte to release the wall back to rigid curve (hysteresis)
 
     # Handbrake bonus: flat extra force when handbrake is engaged.
     enable_handbrake_bonus: bool = True
-    handbrake_bonus: int = 25
+    handbrake_bonus: int = 60
 
     # ABS pulse: vibrate when tire slip telemetry crosses thresholds under hard braking.
     enable_abs: bool = True
-    abs_brake_threshold: int = 80
-    abs_min_speed_kmh: float = 15.0
+    abs_brake_threshold: int = 80             # only pulse if we're definitely braking hard
+    abs_min_speed_kmh: float = 15.0           # only pulse if we're definitely moving
     abs_slip_ratio_threshold: float = 1.0
-    abs_combined_slip_threshold: float = 1.0
-    abs_freq: int = 10
-    abs_amp: int = 20
+    abs_combined_slip_threshold: float = 1.0  
+    abs_freq: int = 10                        # Hz for the ABS pulse
+    abs_amp: int = 20                         # raw 0-255 byte for mode 0x06 vibration amplitude
 
     # =============================================================
     # R2 — Gas pedal
@@ -59,15 +59,15 @@ class Settings:
     enable_rev_limiter: bool = True
     rev_limit_ratio: float = 0.93             # fire right at the cutoff, not across the whole upper rpm range
     rev_limit_freq: int = 20
-    rev_limit_amp: int = 1                    # raw 0-255 byte for mode 0x06 vibration amplitude
+    rev_limit_amp: int = 10                   # raw 0-255 byte for mode 0x06 vibration amplitude
     rev_limit_hold_ms: float = 120.0          # hold buzz this long after each trigger so the rpm bounce doesn't stutter it
 
     # Gear shift: single short vibration burst on up/downshift while moving.
     enable_gear_shift: bool = True
     enable_gear_shift_brake: bool = True
     gear_shift_freq: int = 20
-    gear_shift_amp: int = 255
-    gear_shift_duration_ms: float = 100.0
+    gear_shift_amp: int = 255                 # raw 0-255 byte for mode 0x06 vibration amplitude
+    gear_shift_duration_ms: float = 100.0     # one shot per shift
 
     # =============================================================
     # System
