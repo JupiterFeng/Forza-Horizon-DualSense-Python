@@ -29,10 +29,12 @@ STRINGS = {
     "Shift thump": "Vites darbesi",
     "Throttle stiffness": "Gaz sertliği",
     "Redline buzz": "Devir sınırı titreşimi",
+    "Wheelspin buzz": "Patinaj titreşimi",
 
     # --- settings sections ---
     "Pedals / deadzones": "Pedallar / ölü bölgeler",
     "Brake (left trigger)": "Fren (sol tetik)",
+    "Brake static wall": "Fren statik duvar\u0131",
     "Throttle (right trigger)": "Gaz (sağ tetik)",
     "Rev limiter": "Devir sınırlayıcı",
     "Gear shift thump": "Vites darbesi",

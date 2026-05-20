@@ -29,10 +29,12 @@ STRINGS = {
     "Shift thump": "シフトショック",
     "Throttle stiffness": "スロットル剛性",
     "Redline buzz": "レッドライン振動",
+    "Wheelspin buzz": "ホイールスピン振動",
 
     # --- settings sections ---
     "Pedals / deadzones": "ペダル / デッドゾーン",
     "Brake (left trigger)": "ブレーキ（左トリガー）",
+    "Brake static wall": "ブレーキ静的ウォール",
     "Throttle (right trigger)": "スロットル（右トリガー）",
     "Rev limiter": "レブリミッター",
     "Gear shift thump": "シフトショック",

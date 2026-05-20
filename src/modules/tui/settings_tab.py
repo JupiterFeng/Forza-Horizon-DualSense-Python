@@ -19,9 +19,11 @@ SETTING_SECTIONS = [
         ("brake_baseline_force", "Baseline force", 0, 255),
         ("brake_max_force",      "Max force",     0, 255),
         ("brake_curve",          "Curve",         0.1, 20.0),
+        ("handbrake_bonus",         "Handbrake bonus",   0, 255),
+    ]),
+    ("Brake static wall", [
         ("brake_static_wall_at",    "Static wall at",    0, 255),
         ("brake_static_wall_force", "Static wall force", 0, 255),
-        ("handbrake_bonus",         "Handbrake bonus",   0, 255),
     ]),
     ("Throttle (right trigger)", [
         ("throttle_baseline_force", "Baseline force", 0, 255),
@@ -41,6 +43,9 @@ SETTING_SECTIONS = [
         ("rev_limit_freq",    "Frequency (Hz)",       0, 255),
         ("rev_limit_amp",     "Amplitude",            0, 255),
         ("rev_limit_hold_ms", "Hold (ms)",            0.0, 1000.0),
+    ]),
+    ("Wheelspin buzz", [
+        ("wheelspin_amp",        "Amplitude",               0, 255),
     ]),
     ("Gear shift thump", [
         ("gear_shift_freq",        "Frequency (Hz)", 0, 255),

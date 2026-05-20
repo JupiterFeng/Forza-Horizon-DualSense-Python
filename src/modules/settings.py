@@ -65,6 +65,13 @@ class Settings:
     rev_limit_amp: int = 10                   # raw 0-255 byte for mode 0x06 vibration amplitude
     rev_limit_hold_ms: float = 120.0          # hold buzz this long after each trigger so the rpm bounce doesn't stutter it
 
+    # Wheelspin buzz: when driven wheels spin faster than the car (longitudinal
+    # slip), buzzes the R2 trigger. Surface-aware: water halves amp, off-road
+    # gets a thumpier profile, tarmac uses the amp below. Frequency is fixed at
+    # 100 Hz (only amp is user-tunable).
+    enable_wheelspin_buzz: bool = True
+    wheelspin_amp: int = 3                    # raw 0-255 byte for mode 0x06 vibration amplitude
+
     # Gear shift: single short vibration burst on up/downshift while moving.
     enable_gear_shift: bool = True
     enable_gear_shift_brake: bool = True

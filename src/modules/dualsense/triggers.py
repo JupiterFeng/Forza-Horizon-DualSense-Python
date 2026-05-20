@@ -63,12 +63,14 @@ def feedback(zones):
 
 
 # --- Helpers --------------------------------------------------------------
+# Forza drive_train enum -> wheels that receive engine torque.
+DRIVEN_WHEELS = {0: ("fl", "fr"), 1: ("rl", "rr"), 2: ("fl", "fr", "rl", "rr")}
 
 def _amp_to_strength(amp_byte):
     return max(1, min(8, (max(0, int(amp_byte)) // 32) + 1))
 
-def _max_slip(t, prefix):
-    return max(abs(t[f"{prefix}_{w}"]) for w in ("fl", "fr", "rl", "rr"))
+def _max_slip(t, prefix, wheels=("fl", "fr", "rl", "rr")):
+    return max(abs(t[f"{prefix}_{w}"]) for w in wheels)
 
 def _ramp(value, deadzone, baseline, max_force, curve, ceiling):
     """deadzone..ceiling -> baseline..max_force, curve = exponent."""
@@ -140,6 +142,27 @@ class TriggerAnimations:
             return vibration(s.rev_limit_freq, s.rev_limit_amp)
         return None
 
+    def wheelspin_buzz(self, t, s, now):
+        # Per-surface R2 buzz when driven wheels spin faster than the road.
+        if not s.enable_wheelspin_buzz:
+            return None
+        # Need real throttle input above 10 km/h; below that launch-spin dominates.
+        if t["speed"] < 10.0 or t["accel"] < s.accel_deadzone:
+            return None
+        # Positive slip only. Negative = locked wheels (handbrake/ABS), not wheelspin.
+        wheels = DRIVEN_WHEELS.get(t["drive_train"], ("fl", "fr", "rl", "rr"))
+        if max(t[f"tire_slip_ratio_{w}"] for w in wheels) < 1.2:
+            return None
+        # Surface profile: water halves amp, off-road gets a thumpier buzz.
+        if any(t[f"wheel_in_puddle_depth_{w}"] > 0.0 for w in wheels):
+            return vibration(100, max(1, s.wheelspin_amp // 2))
+        rumble = max(abs(t[f"surface_rumble_{w}"]) for w in wheels)
+        if rumble > 0.30:        # gravel / rocks
+            return vibration(20, 15)
+        if rumble > 0.10:        # dirt / loose tarmac
+            return vibration(60, 8)
+        return vibration(100, s.wheelspin_amp)  # tarmac
+
     def abs_pulse(self, t, s):
         if not s.enable_abs:
             return None
@@ -173,7 +196,7 @@ class Controller:
     """Produces (L2, R2) frames per tick.
 
     Priority L2: shift thump -> ABS rumble -> wall -> brake resistance.
-    Priority R2: shift thump -> rev limiter -> wall -> throttle ramp.
+    Priority R2: shift thump -> rev limiter -> wheelspin buzz -> wall -> throttle ramp.
     """
 
     def __init__(self, settings):
@@ -217,6 +240,9 @@ class Controller:
         rev = self.anim.rev_buzz(t, s, now)
         if rev:
             return rev
+        spin = self.anim.wheelspin_buzz(t, s, now)
+        if spin is not None:
+            return spin
         self._r2_in_wall = _wall_state(accel, self._r2_in_wall,
                                        s.throttle_wall_engage_at, s.throttle_wall_release_at)
         if self._r2_in_wall:

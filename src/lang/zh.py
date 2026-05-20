@@ -29,10 +29,12 @@ STRINGS = {
     "Shift thump": "换挡冲击",
     "Throttle stiffness": "油门阻力",
     "Redline buzz": "红线区震动",
+    "Wheelspin buzz": "车轮打滑震动",
 
     # --- settings sections ---
     "Pedals / deadzones": "踏板 / 死区",
     "Brake (left trigger)": "刹车（左扳机）",
+    "Brake static wall": "刹车静态防护墙",
     "Throttle (right trigger)": "油门（右扳机）",
     "Rev limiter": "转速限制器",
     "Gear shift thump": "换挡冲击",
