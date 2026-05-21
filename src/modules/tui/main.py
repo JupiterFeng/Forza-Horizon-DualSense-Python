@@ -10,7 +10,7 @@ from textual.widgets import Button, Header, Input, Static, Switch, TabbedContent
 
 from lang import set_language, t
 from modules import dualsense, loop, preferences, profiles, udplistener
-from modules.dualsense.triggers import off, vibration
+from modules.dualsense.triggers import off, vibrate
 from modules.preferences import _version
 
 from .controls_tab import ControlsTab
@@ -261,7 +261,7 @@ class TriggerTUI(App):
 
     def _do_haptic(self, on: bool) -> None:
         amp = HAPTIC_AMP_ON if on else HAPTIC_AMP_OFF
-        v = vibration(HAPTIC_FREQ_HZ, amp)
+        v = vibrate(HAPTIC_FREQ_HZ, amp)
         self._ds.set(v, v)
         time.sleep(HAPTIC_DURATION_S)
         self._ds.set(off(), off())

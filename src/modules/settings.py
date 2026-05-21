@@ -75,7 +75,7 @@ class Settings:
     # Gear shift: single short vibration burst on up/downshift while moving.
     enable_gear_shift: bool = True
     enable_gear_shift_brake: bool = True
-    gear_shift_freq: int = 20
+    gear_shift_freq: int = 10
     gear_shift_amp: int = 255                 # raw 0-255 byte for mode 0x06 vibration amplitude
     gear_shift_duration_ms: float = 100.0     # one shot per shift
 
