@@ -189,6 +189,11 @@ class TriggerAnimations:
         # Brief hold so rpm bouncing against the limit doesn't stutter.
         if not s.enable_rev_limiter:
             return None
+        handbrake_full_throttle = (
+            t["accel"] >= RAW_MAX * 0.8 and
+            t["handbrake"] > 16 and t["speed"] < 1)
+        if handbrake_full_throttle:
+            return vibrate(s.rev_limit_freq, s.rev_limit_amp)
         if t["accel"] >= s.accel_deadzone:
             max_rpm = t["max_rpm"]
             rpm_r = t["rpm"] / max_rpm if max_rpm > 0 else 0.0
