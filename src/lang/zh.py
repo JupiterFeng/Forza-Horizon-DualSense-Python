@@ -107,6 +107,19 @@ STRINGS = {
     "resume": "继续",
     "clear": "清除",
 
+    # --- controls tab switch labels ---
+    "Shift thump": "换挡冲击",
+    "ABS rumble": "ABS 震动",
+    "Static brake wall": "静态刹车防护墙",
+    "Brake stiffness": "刹车阻力",
+    "Handbrake stiffness bonus": "手刹额外阻力",
+    "Redline buzz": "红线震动",
+    "Idle buzz": "怠速震动",
+    "Throttle stiffness": "油门阻力",
+
+    # --- settings tab (idle) ---
+    "Idle strength": "怠速强度",
+
     # --- language tab ---
     "Pick a language, then restart the app to apply it.":
         "选择一种语言，然后重启应用以应用更改。",
